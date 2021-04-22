@@ -1,0 +1,16 @@
+% *** Lecture d'un fichier Addélie pour traitement sous Matlab ***
+
+load Test005.dat
+
+time=Test005(:,1);
+y1=Test005(:,2);
+y2=Test005(:,3);
+
+figure(4)
+plot(time,y1,'r.',time,y2,'b.')
+
+ind1=66;
+ind2=length(time);
+
+texp=time(ind1:ind2);
+y1=y1(ind1:ind2)

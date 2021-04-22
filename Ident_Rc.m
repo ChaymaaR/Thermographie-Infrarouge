@@ -1,0 +1,81 @@
+% *** Programme d'identification du défaut ***
+
+warning off;
+
+% global a la e
+
+global fonction yexpn beta_minleven;
+
+% Données du problème 
+
+a=5e-7      % Diffusivité thermique du matériau
+la=2        % Conductivité thermique du matériau
+e=4e-3      % Epaisseur du matériau
+
+Rm=e/la     % Résistance du matériau
+h=0         % Valeur du coefficient d'échange
+
+tc=e^2/a;   % Temps caractéristique
+
+% Valeurs Initiales : betainit=[e1 - Rc - h] 
+
+betainit=[e/2;1e-4];
+    
+% Courbe de contraste Expérimentale - Simulée
+
+texp=t;
+yexpn=ycste_ar;
+
+% Modèle d'identification 
+
+fonction='Contraste_Ar';
+%fonction='Contraste_Av';
+
+% Levenberg-Marquardt 
+
+figure(3)
+options=foptions;
+
+betaols=betainit;
+beta_minleven=zeros(size(betainit));
+
+while (betaols~=beta_minleven),
+    
+    options=zeros(length(betainit),2);
+    stol=1e-4;
+    niter=100;
+    wt=1;
+    dp=1e-3*ones(size(betainit));
+    dfdp='';
+    options(:,1)=zeros(length(betainit),1);
+    options(:,2)=1e-1*ones(length(betainit),1);
+    
+    [fcout,betaols]=leasqr(texp,yexpn,[betainit],'minleven',stol,niter,wt,dp,'dfdp',options); 		   	% Levenberg-Marquardt
+    betainit=beta_minleven;
+end;
+    
+% Calcul du contraste à partir des paramètres estimés;
+
+if fonction=='Contraste_Ar',
+    ythe=contraste_ar(texp,betaols);
+end;
+
+if fonction=='Contraste_Av',
+    ythe=contraste_av(texp,betaols);
+end;
+
+% *** Affichage des Résultats ***
+
+residusols=yexpn-ythe;
+plot(texp/tc,yexpn,'r',texp/tc,ythe,':',texp/tc,residusols*4-0.1,'-.');
+axis([0 max(texp/tc) -0.2 1.2]);
+xlabel('');
+ylabel('Reduced Thermogram');
+if fonction=='Contraste_Ar',
+    title(['Contraste Face Arrière : ' num2str(betaols')]);
+end;
+if fonction=='Contraste_Av',
+    title(['Contraste Face Avant : ' num2str(betaols')]);
+end;
+grid;
+drawnow;

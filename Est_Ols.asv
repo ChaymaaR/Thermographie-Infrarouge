@@ -1,0 +1,47 @@
+% *** Estimation par la Méthode des Moindres Carrés (Levenberg-Marquardt) ***
+
+options=foptions;
+
+global fonction texp yexpn;
+fonction='quadart';
+
+if choixm==1,
+	Algo_Ols='Levenberg-Marquardt';
+   [fcout,betaols]=leasqr(texp(Ideb:Ifin),yexpn(Ideb:Ifin),[betainit],'minleven'); 		   	% Levenberg-Marquardt
+end;
+
+if choixm==2,
+	Algo_Ols='Nelder-Mead Simplex';
+	betaols=fmins('minsimp',betainit,options,[],texp,yexpn);			% Nelder-Mead Simplex
+end;
+
+ythe=quadart(texp,betaols);
+
+% *** Affichage des Résultats ***
+
+StEst_Ols={'';...
+      ['Moindres Carrés : a/e^2 - Bi'];...
+      '';...
+		Algo_Ols;...
+      '';...
+      num2str(betaols');...
+   	};
+
+StEst_Ols2=[StEst_Diffu;StEst_Ols];
+   
+set(idst1,'String',StEst_Ols2);
+
+% *** Affichage des Courbes ***
+
+residusols=yexpn-ythe;
+plot(texp,yexpn,'r',texp,ythe,':',texp,residusols*4-0.1,'-.');
+axis([0 max(texp) -0.2 1.2]);
+xlabel('Time t(s)');
+ylabel('Reduced Thermogram');
+title([pathname filename],'color',[1 0 0]);
+grid;
+drawnow;
+
+end;
+
+end;
